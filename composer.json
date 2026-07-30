@@ -68,5 +68,12 @@
             "require": "8.1.*",
             "docker": true
         }
+    },
+    "require-dev": {
+        "matesofmate/composer-extension": "^0.4.0",
+        "matesofmate/phpunit-extension": "^0.4.0",
+        "symfony/ai-mate": "^0.11.0",
+        "symfony/ai-mate-composer-plugin": "^0.11.0",
+        "symfony/ai-monolog-mate-extension": "^0.11.0"
     }
 }

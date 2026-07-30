@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "mate": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "webhook-debugger-api-php-1",
+        "php",
+        "vendor/symfony/ai-mate/bin/mate",
+        "serve",
+        "--force-keep-alive"
+      ]
+    }
+  }
+}
