@@ -76,8 +76,11 @@
     "require-dev": {
         "matesofmate/composer-extension": "^0.4.0",
         "matesofmate/phpunit-extension": "^0.4.0",
+        "phpunit/phpunit": "^13.2",
         "symfony/ai-mate": "^0.11.0",
         "symfony/ai-mate-composer-plugin": "^0.11.0",
-        "symfony/ai-monolog-mate-extension": "^0.11.0"
+        "symfony/ai-monolog-mate-extension": "^0.11.0",
+        "symfony/browser-kit": "8.1.*",
+        "symfony/css-selector": "8.1.*"
     }
 }

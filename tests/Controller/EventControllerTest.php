@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Tests\Controller;
+
+use App\Tests\WebhookDebuggerTestCase;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+
+class EventControllerTest extends WebhookDebuggerTestCase
+{
+    private function createInboxWithEvent(KernelBrowser $client): array
+    {
+        $client->request('POST', '/inboxes', server: ['CONTENT_TYPE' => 'application/json'], content: '{}');
+        $inboxId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request(
+            'POST',
+            "/in/$inboxId",
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['a' => 1]),
+        );
+        $eventId = json_decode($client->getResponse()->getContent(), true)['event_id'];
+
+        return [$inboxId, $eventId];
+    }
+
+    public function testListEvents(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId] = $this->createInboxWithEvent($client);
+
+        $client->request('GET', "/inboxes/$inboxId/events");
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame(1, $data['total']);
+        self::assertCount(1, $data['events']);
+        self::assertArrayNotHasKey('headers', $data['events'][0]);
+    }
+
+    public function testShowEvent(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request('GET', "/inboxes/$inboxId/events/$eventId");
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame($eventId, $data['id']);
+        self::assertSame(['a' => 1], $data['body_json']);
+        self::assertArrayHasKey('headers', $data);
+    }
+
+    public function testShowUnknownEventReturns404(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId] = $this->createInboxWithEvent($client);
+
+        $client->request('GET', "/inboxes/$inboxId/events/00000000-0000-0000-0000-000000000000");
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testShowEventFromWrongInboxReturns404(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request('POST', '/inboxes', server: ['CONTENT_TYPE' => 'application/json'], content: '{}');
+        $otherInboxId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('GET', "/inboxes/$otherInboxId/events/$eventId");
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testReplayInvalidUrlReturns422(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request(
+            'POST',
+            "/inboxes/$inboxId/events/$eventId/replay",
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['target_url' => 'not-a-url']),
+        );
+
+        self::assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame('invalid_target_url', $data['error']['code']);
+    }
+
+    public function testReplayBlocksPrivateTarget(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request(
+            'POST',
+            "/inboxes/$inboxId/events/$eventId/replay",
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['target_url' => 'http://127.0.0.1:1234']),
+        );
+
+        self::assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame('target_url_blocked', $data['error']['code']);
+    }
+}
