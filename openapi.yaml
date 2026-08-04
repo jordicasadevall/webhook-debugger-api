@@ -1,0 +1,360 @@
+openapi: 3.0.3
+info:
+  title: Webhook Debugger API
+  description: |
+    Receive, inspect, and replay webhooks.
+
+    Create an inbox, point any webhook provider (Stripe, GitHub, Shopify,
+    n8n, ...) at its receiving URL, then list, inspect, and replay the
+    captured requests to any destination URL — useful for debugging
+    webhook integrations without a public endpoint of your own.
+
+    Authentication is handled entirely by RapidAPI at the gateway level;
+    no API key is required in the request body or path.
+  version: "1.0.0"
+servers:
+  - url: https://webhook-debugger-api.example.com
+    description: Production (replace with the deployed base URL)
+
+tags:
+  - name: Inboxes
+  - name: Webhook Receiver
+  - name: Events
+
+paths:
+  /inboxes:
+    post:
+      operationId: createInbox
+      tags: [Inboxes]
+      summary: Create a new inbox
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Optional label for the inbox.
+                  example: my-stripe-inbox
+      responses:
+        '201':
+          description: Inbox created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+
+  /inboxes/{inboxId}:
+    get:
+      operationId: getInbox
+      tags: [Inboxes]
+      summary: Get inbox details
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+      responses:
+        '200':
+          description: Inbox found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inbox'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /in/{inboxId}:
+    post:
+      operationId: receiveWebhookPost
+      tags: [Webhook Receiver]
+      summary: Receive a webhook (POST)
+      description: |
+        Accepts any HTTP method (GET, POST, PUT, PATCH, DELETE), any
+        content type, and any body — this is the URL you configure in
+        your webhook provider. The full request (method, URL, headers,
+        query params, raw body, parsed JSON body, client IP, timestamp)
+        is captured as an event under this inbox and always returns
+        quickly so senders don't retry or disable the webhook.
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+      requestBody:
+        required: false
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Webhook captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiveResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+    get:
+      operationId: receiveWebhookGet
+      tags: [Webhook Receiver]
+      summary: Receive a webhook (GET)
+      description: |
+        Some providers send a GET verification challenge before
+        registering a webhook. Behaves identically to the POST variant.
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+      responses:
+        '200':
+          description: Webhook captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiveResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /inboxes/{inboxId}/events:
+    get:
+      operationId: listEvents
+      tags: [Events]
+      summary: List events received by an inbox
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventList'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /inboxes/{inboxId}/events/{eventId}:
+    get:
+      operationId: getEvent
+      tags: [Events]
+      summary: Get full detail of a single captured event
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '200':
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /inboxes/{inboxId}/events/{eventId}/replay:
+    post:
+      operationId: replayEvent
+      tags: [Events]
+      summary: Replay a captured event to a destination URL
+      description: |
+        Re-sends the stored request (same method, headers, and body) to
+        `target_url` and returns the response. `target_url` must be a
+        public http(s) URL — loopback, private, link-local, and cloud
+        metadata address ranges are blocked.
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+        - $ref: '#/components/parameters/EventId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target_url]
+              properties:
+                target_url:
+                  type: string
+                  format: uri
+                  example: https://example.com/webhook-handler
+      responses:
+        '200':
+          description: Replay completed (reflects the target's response, not necessarily success)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplayResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableTargetUrl'
+        '502':
+          $ref: '#/components/responses/ReplayFailed'
+
+components:
+  parameters:
+    InboxId:
+      name: inboxId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Inbox:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+          description: The webhook receiving URL to give to your provider.
+        created_at:
+          type: string
+          format: date-time
+
+    ReceiveResult:
+      type: object
+      properties:
+        status:
+          type: string
+          example: received
+        event_id:
+          type: string
+          format: uuid
+
+    EventSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        method:
+          type: string
+          example: POST
+        url:
+          type: string
+        client_ip:
+          type: string
+          nullable: true
+        received_at:
+          type: string
+          format: date-time
+
+    EventDetail:
+      allOf:
+        - $ref: '#/components/schemas/EventSummary'
+        - type: object
+          properties:
+            headers:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+            query_params:
+              type: object
+            body_raw:
+              type: string
+              nullable: true
+            body_json:
+              type: object
+              nullable: true
+
+    EventList:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSummary'
+
+    ReplayResult:
+      type: object
+      properties:
+        status_code:
+          type: integer
+        headers:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        body:
+          type: string
+        duration_ms:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+  responses:
+    NotFound:
+      description: Inbox or event not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: not_found, message: Resource not found }
+    PayloadTooLarge:
+      description: Request body exceeds the maximum allowed size (1 MB)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: payload_too_large, message: Request body exceeds maximum allowed size }
+    UnprocessableTargetUrl:
+      description: target_url missing, invalid, or blocked (private/loopback address)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: target_url_blocked, message: target_url resolves to a blocked address range }
+    ReplayFailed:
+      description: Could not reach target_url
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: replay_failed, message: 'Could not reach target_url: ...' }
