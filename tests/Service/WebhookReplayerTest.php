@@ -6,6 +6,7 @@ use App\Entity\Event;
 use App\Entity\Inbox;
 use App\Exception\ApiException;
 use App\Service\WebhookReplayer;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -27,7 +28,8 @@ class WebhookReplayerTest extends TestCase
         );
     }
 
-    public function testReplaySuccess(): void
+    #[Test]
+    public function replaySuccess(): void
     {
         $httpClient = new MockHttpClient(new MockResponse('{"ok":true}', [
             'http_code' => 200,
@@ -42,7 +44,8 @@ class WebhookReplayerTest extends TestCase
         self::assertArrayHasKey('duration_ms', $result);
     }
 
-    public function testReplayDoesNotForwardHopByHopHeaders(): void
+    #[Test]
+    public function replayDoesNotForwardHopByHopHeaders(): void
     {
         $capturedHeaders = null;
         $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (&$capturedHeaders) {
@@ -59,7 +62,8 @@ class WebhookReplayerTest extends TestCase
         self::assertContains('content-type: application/json', $lowercasedHeaderLines);
     }
 
-    public function testReplayBlocksLoopbackTarget(): void
+    #[Test]
+    public function replayBlocksLoopbackTarget(): void
     {
         $replayer = new WebhookReplayer(new MockHttpClient());
 
@@ -68,7 +72,8 @@ class WebhookReplayerTest extends TestCase
         $replayer->replay($this->makeEvent(), 'http://127.0.0.1/webhook');
     }
 
-    public function testReplayBlocksPrivateRangeTarget(): void
+    #[Test]
+    public function replayBlocksPrivateRangeTarget(): void
     {
         $replayer = new WebhookReplayer(new MockHttpClient());
 
@@ -77,7 +82,8 @@ class WebhookReplayerTest extends TestCase
         $replayer->replay($this->makeEvent(), 'http://192.168.1.1/webhook');
     }
 
-    public function testReplayRejectsNonHttpScheme(): void
+    #[Test]
+    public function replayRejectsNonHttpScheme(): void
     {
         $replayer = new WebhookReplayer(new MockHttpClient());
 
@@ -86,7 +92,8 @@ class WebhookReplayerTest extends TestCase
         $replayer->replay($this->makeEvent(), 'ftp://example.com/webhook');
     }
 
-    public function testReplayWrapsTransportFailureAs502(): void
+    #[Test]
+    public function replayWrapsTransportFailureAs502(): void
     {
         $httpClient = new MockHttpClient(new MockResponse((static function () {
             yield new TransportException('Connection refused');

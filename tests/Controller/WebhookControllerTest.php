@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Tests\WebhookDebuggerTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 class WebhookControllerTest extends WebhookDebuggerTestCase
@@ -15,7 +16,8 @@ class WebhookControllerTest extends WebhookDebuggerTestCase
         return json_decode($client->getResponse()->getContent(), true)['id'];
     }
 
-    public function testReceiveJsonPostCapturesBodyAndQuery(): void
+    #[Test]
+    public function receiveJsonPostCapturesBodyAndQuery(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -34,7 +36,8 @@ class WebhookControllerTest extends WebhookDebuggerTestCase
         self::assertArrayHasKey('event_id', $data);
     }
 
-    public function testReceiveGetWithoutBody(): void
+    #[Test]
+    public function receiveGetWithoutBody(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -45,7 +48,8 @@ class WebhookControllerTest extends WebhookDebuggerTestCase
         self::assertResponseStatusCodeSame(200);
     }
 
-    public function testReceiveUnknownInboxReturns404(): void
+    #[Test]
+    public function receiveUnknownInboxReturns404(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -55,7 +59,8 @@ class WebhookControllerTest extends WebhookDebuggerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testPayloadTooLargeReturns413(): void
+    #[Test]
+    public function payloadTooLargeReturns413(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));

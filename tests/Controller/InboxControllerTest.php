@@ -4,10 +4,12 @@ namespace App\Tests\Controller;
 
 use App\Tests\WebhookDebuggerTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Test;
 
 class InboxControllerTest extends WebhookDebuggerTestCase
 {
-    public function testCreateInbox(): void
+    #[Test]
+    public function createInbox(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -22,7 +24,8 @@ class InboxControllerTest extends WebhookDebuggerTestCase
         self::assertArrayHasKey('created_at', $data);
     }
 
-    public function testCreateInboxWithoutName(): void
+    #[Test]
+    public function createInboxWithoutName(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -34,7 +37,8 @@ class InboxControllerTest extends WebhookDebuggerTestCase
         self::assertNull($data['name']);
     }
 
-    public function testShowInbox(): void
+    #[Test]
+    public function showInbox(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -49,7 +53,8 @@ class InboxControllerTest extends WebhookDebuggerTestCase
         self::assertSame($created['id'], $data['id']);
     }
 
-    public function testShowUnknownInboxReturns404(): void
+    #[Test]
+    public function showUnknownInboxReturns404(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));

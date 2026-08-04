@@ -4,6 +4,7 @@ namespace App\Tests\Controller;
 
 use App\Tests\WebhookDebuggerTestCase;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 class EventControllerTest extends WebhookDebuggerTestCase
@@ -24,7 +25,8 @@ class EventControllerTest extends WebhookDebuggerTestCase
         return [$inboxId, $eventId];
     }
 
-    public function testListEvents(): void
+    #[Test]
+    public function listEvents(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -39,7 +41,8 @@ class EventControllerTest extends WebhookDebuggerTestCase
         self::assertArrayNotHasKey('headers', $data['events'][0]);
     }
 
-    public function testShowEvent(): void
+    #[Test]
+    public function showEvent(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -54,7 +57,8 @@ class EventControllerTest extends WebhookDebuggerTestCase
         self::assertArrayHasKey('headers', $data);
     }
 
-    public function testShowUnknownEventReturns404(): void
+    #[Test]
+    public function showUnknownEventReturns404(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -65,7 +69,8 @@ class EventControllerTest extends WebhookDebuggerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testShowEventFromWrongInboxReturns404(): void
+    #[Test]
+    public function showEventFromWrongInboxReturns404(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -79,7 +84,8 @@ class EventControllerTest extends WebhookDebuggerTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
-    public function testReplayInvalidUrlReturns422(): void
+    #[Test]
+    public function replayInvalidUrlReturns422(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
@@ -97,7 +103,8 @@ class EventControllerTest extends WebhookDebuggerTestCase
         self::assertSame('invalid_target_url', $data['error']['code']);
     }
 
-    public function testReplayBlocksPrivateTarget(): void
+    #[Test]
+    public function replayBlocksPrivateTarget(): void
     {
         $client = static::createClient();
         $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
