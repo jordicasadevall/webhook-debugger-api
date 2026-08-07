@@ -15,7 +15,8 @@ class InboxController
     #[Route('/inboxes', name: 'inbox_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator): JsonResponse
     {
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = json_decode($request->getContent(), true);
+        $data = is_array($data) ? $data : [];
         $name = is_string($data['name'] ?? null) ? trim($data['name']) : null;
 
         $inbox = new Inbox('' !== $name ? $name : null);

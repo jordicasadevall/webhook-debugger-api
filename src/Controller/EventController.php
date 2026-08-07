@@ -73,7 +73,8 @@ class EventController
             throw ApiException::tooManyRequests('rate_limited', 'Too many replay requests, slow down');
         }
 
-        $data = json_decode($request->getContent(), true) ?? [];
+        $data = json_decode($request->getContent(), true);
+        $data = is_array($data) ? $data : [];
         $targetUrl = is_string($data['target_url'] ?? null) ? trim($data['target_url']) : '';
 
         if ('' === $targetUrl || false === filter_var($targetUrl, FILTER_VALIDATE_URL)) {

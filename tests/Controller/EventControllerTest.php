@@ -104,6 +104,25 @@ class EventControllerTest extends WebhookDebuggerTestCase
     }
 
     #[Test]
+    public function replayWithNonObjectJsonBodyReturns422(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request(
+            'POST',
+            "/inboxes/$inboxId/events/$eventId/replay",
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: '5',
+        );
+
+        self::assertResponseStatusCodeSame(422);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame('invalid_target_url', $data['error']['code']);
+    }
+
+    #[Test]
     public function replayBlocksPrivateTarget(): void
     {
         $client = static::createClient();

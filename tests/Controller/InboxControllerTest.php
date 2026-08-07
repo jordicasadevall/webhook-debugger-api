@@ -38,6 +38,19 @@ class InboxControllerTest extends WebhookDebuggerTestCase
     }
 
     #[Test]
+    public function createInboxWithNonObjectJsonBodyIgnoresIt(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+
+        $client->request('POST', '/inboxes', server: ['CONTENT_TYPE' => 'application/json'], content: '5');
+
+        self::assertResponseStatusCodeSame(201);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertNull($data['name']);
+    }
+
+    #[Test]
     public function showInbox(): void
     {
         $client = static::createClient();
