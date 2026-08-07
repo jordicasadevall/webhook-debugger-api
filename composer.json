@@ -19,6 +19,7 @@
         "symfony/http-client": "8.1.*",
         "symfony/rate-limiter": "8.1.*",
         "symfony/runtime": "8.1.*",
+        "symfony/uid": "8.1.*",
         "symfony/yaml": "8.1.*"
     },
     "config": {

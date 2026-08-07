@@ -11,13 +11,16 @@ Docker/server setup covered in [`production.md`](production.md).
 - [ ] Open required ports in the firewall/security group (80, 443, and
       443/udp for HTTP3).
 
-## Fix the prod image build first
+## Prod image build
 
-Building the `frankenphp_prod` target runs `composer run-script
-post-install-cmd` (which includes `cache:clear`) at build time. That step
-needs a real `DATABASE_URL`/`APP_SECRET` to succeed — confirmed by trying the
-build locally without them. Resolve this (build-time secrets, or adjusting
-the Dockerfile's install step) before the image can be built at all.
+~~Building the `frankenphp_prod` target failed~~ — fixed. Root cause wasn't
+missing build-time secrets, it was `symfony/uid` (used directly by
+`Symfony\Component\Uid\Uuid` in the entities) only being present transitively
+via `symfony/ai-mate`, a `require-dev`-only tool. Stripped out by `--no-dev`,
+which broke every entity with an ID. Added `symfony/uid` as a direct
+dependency; verified by building the real `frankenphp_prod` image, running
+it against the dev Postgres, and confirming create-inbox → receive →
+list-events works end to end.
 
 ## App secrets/config
 
