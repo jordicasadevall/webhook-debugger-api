@@ -5,6 +5,8 @@ namespace App\Tests\EventListener;
 use App\EventListener\RapidApiProxyGuard;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -12,6 +14,11 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class RapidApiProxyGuardTest extends TestCase
 {
+    private function makeGuard(string $secret, ?LoggerInterface $logger = null): RapidApiProxyGuard
+    {
+        return new RapidApiProxyGuard($secret, $logger ?? new NullLogger());
+    }
+
     private function makeEvent(Request $request): RequestEvent
     {
         return new RequestEvent(
@@ -24,7 +31,7 @@ class RapidApiProxyGuardTest extends TestCase
     #[Test]
     public function disabledWhenSecretNotConfigured(): void
     {
-        $guard = new RapidApiProxyGuard('');
+        $guard = $this->makeGuard('');
         $request = Request::create('/inboxes', 'POST');
         $request->attributes->set('_route', 'inbox_create');
         $event = $this->makeEvent($request);
@@ -37,7 +44,7 @@ class RapidApiProxyGuardTest extends TestCase
     #[Test]
     public function blocksRequestMissingTheSecretHeader(): void
     {
-        $guard = new RapidApiProxyGuard('super-secret');
+        $guard = $this->makeGuard('super-secret');
         $request = Request::create('/inboxes', 'POST');
         $request->attributes->set('_route', 'inbox_create');
         $event = $this->makeEvent($request);
@@ -51,7 +58,7 @@ class RapidApiProxyGuardTest extends TestCase
     #[Test]
     public function blocksRequestWithWrongSecret(): void
     {
-        $guard = new RapidApiProxyGuard('super-secret');
+        $guard = $this->makeGuard('super-secret');
         $request = Request::create('/inboxes', 'POST', server: ['HTTP_X_RAPIDAPI_PROXY_SECRET' => 'wrong']);
         $request->attributes->set('_route', 'inbox_create');
         $event = $this->makeEvent($request);
@@ -63,9 +70,24 @@ class RapidApiProxyGuardTest extends TestCase
     }
 
     #[Test]
+    public function logsBlockedRequestsForAbuseVisibility(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning')->with(
+            self::stringContains('bypassing RapidAPI'),
+            self::callback(static fn (array $context) => 'forbidden' === $context['code'] && '/inboxes' === $context['path']),
+        );
+        $guard = $this->makeGuard('super-secret', $logger);
+        $request = Request::create('/inboxes', 'POST');
+        $request->attributes->set('_route', 'inbox_create');
+
+        ($guard)($this->makeEvent($request));
+    }
+
+    #[Test]
     public function allowsRequestWithCorrectSecret(): void
     {
-        $guard = new RapidApiProxyGuard('super-secret');
+        $guard = $this->makeGuard('super-secret');
         $request = Request::create('/inboxes', 'POST', server: ['HTTP_X_RAPIDAPI_PROXY_SECRET' => 'super-secret']);
         $request->attributes->set('_route', 'inbox_create');
         $event = $this->makeEvent($request);
@@ -78,7 +100,7 @@ class RapidApiProxyGuardTest extends TestCase
     #[Test]
     public function exemptsWebhookReceiverRegardlessOfHeader(): void
     {
-        $guard = new RapidApiProxyGuard('super-secret');
+        $guard = $this->makeGuard('super-secret');
         $request = Request::create('/in/00000000-0000-0000-0000-000000000000', 'POST');
         $request->attributes->set('_route', 'webhook_receive');
         $event = $this->makeEvent($request);
@@ -91,7 +113,7 @@ class RapidApiProxyGuardTest extends TestCase
     #[Test]
     public function exemptsDocsRoutes(): void
     {
-        $guard = new RapidApiProxyGuard('super-secret');
+        $guard = $this->makeGuard('super-secret');
         $request = Request::create('/docs', 'GET');
         $request->attributes->set('_route', 'docs_ui');
         $event = $this->makeEvent($request);

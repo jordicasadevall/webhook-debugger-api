@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,6 +26,7 @@ class RapidApiProxyGuard
     public function __construct(
         #[Autowire('%env(RAPIDAPI_PROXY_SECRET)%')]
         private readonly string $expectedSecret,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -45,6 +47,12 @@ class RapidApiProxyGuard
         $provided = $request->headers->get('X-RapidAPI-Proxy-Secret') ?? '';
 
         if (!hash_equals($this->expectedSecret, $provided)) {
+            $this->logger->warning('Blocked request: direct API access bypassing RapidAPI', [
+                'code' => 'forbidden',
+                'path' => $request->getPathInfo(),
+                'ip' => $request->getClientIp(),
+            ]);
+
             $event->setResponse(new JsonResponse(
                 ['error' => ['code' => 'forbidden', 'message' => 'This API must be called through RapidAPI']],
                 403,
