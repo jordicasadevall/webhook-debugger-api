@@ -75,4 +75,25 @@ class WebhookControllerTest extends WebhookDebuggerTestCase
 
         self::assertResponseStatusCodeSame(413);
     }
+
+    #[Test]
+    public function excessiveRequestsAreRateLimited(): void
+    {
+        $client = static::createClient();
+        $client->setServerParameter('REMOTE_ADDR', '203.0.113.10');
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        $inboxId = $this->createInbox($client);
+
+        // test env limiters are configured with limit=3 (see config/packages/framework.yaml)
+        for ($i = 0; $i < 3; ++$i) {
+            $client->request('POST', "/in/$inboxId");
+            self::assertResponseStatusCodeSame(200);
+        }
+
+        $client->request('POST', "/in/$inboxId");
+
+        self::assertResponseStatusCodeSame(429);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame('rate_limited', $data['error']['code']);
+    }
 }

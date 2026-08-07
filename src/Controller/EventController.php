@@ -9,13 +9,21 @@ use App\Repository\EventRepository;
 use App\Service\WebhookReplayer;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 
 class EventController
 {
+    public function __construct(
+        #[Autowire(service: 'limiter.webhook_replay')]
+        private readonly RateLimiterFactory $replayLimiter,
+    ) {
+    }
+
     #[Route('/inboxes/{inbox}/events', name: 'event_list', methods: ['GET'], requirements: ['inbox' => Requirement::UUID])]
     public function list(
         #[MapEntity(mapping: ['inbox' => 'id'])] Inbox $inbox,
@@ -60,6 +68,10 @@ class EventController
         WebhookReplayer $replayer,
     ): JsonResponse {
         $this->assertBelongsToInbox($event, $inbox);
+
+        if (!$this->replayLimiter->create($request->getClientIp() ?? 'unknown')->consume()->isAccepted()) {
+            throw ApiException::tooManyRequests('rate_limited', 'Too many replay requests, slow down');
+        }
 
         $data = json_decode($request->getContent(), true) ?? [];
         $targetUrl = is_string($data['target_url'] ?? null) ? trim($data['target_url']) : '';

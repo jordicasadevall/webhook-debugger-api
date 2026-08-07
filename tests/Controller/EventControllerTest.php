@@ -121,4 +121,38 @@ class EventControllerTest extends WebhookDebuggerTestCase
         $data = json_decode($client->getResponse()->getContent(), true);
         self::assertSame('target_url_blocked', $data['error']['code']);
     }
+
+    #[Test]
+    public function excessiveReplayRequestsAreRateLimited(): void
+    {
+        $client = static::createClient();
+        $client->setServerParameter('REMOTE_ADDR', '203.0.113.20');
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $body = json_encode(['target_url' => 'not-a-url']);
+
+        // test env limiter is configured with limit=3 (see config/packages/framework.yaml);
+        // the limiter must trip before target_url is even validated.
+        for ($i = 0; $i < 3; ++$i) {
+            $client->request(
+                'POST',
+                "/inboxes/$inboxId/events/$eventId/replay",
+                server: ['CONTENT_TYPE' => 'application/json'],
+                content: $body,
+            );
+            self::assertResponseStatusCodeSame(422);
+        }
+
+        $client->request(
+            'POST',
+            "/inboxes/$inboxId/events/$eventId/replay",
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: $body,
+        );
+
+        self::assertResponseStatusCodeSame(429);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        self::assertSame('rate_limited', $data['error']['code']);
+    }
 }

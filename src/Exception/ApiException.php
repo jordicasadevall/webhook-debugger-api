@@ -35,4 +35,9 @@ class ApiException extends HttpException
     {
         return new self(502, $errorCode, $message);
     }
+
+    public static function tooManyRequests(string $errorCode, string $message): self
+    {
+        return new self(429, $errorCode, $message);
+    }
 }

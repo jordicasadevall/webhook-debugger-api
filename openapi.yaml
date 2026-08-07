@@ -97,6 +97,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '413':
           $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
     get:
       operationId: receiveWebhookGet
       tags: [Webhook Receiver]
@@ -115,6 +117,8 @@ paths:
                 $ref: '#/components/schemas/ReceiveResult'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   /inboxes/{inboxId}/events:
     get:
@@ -200,6 +204,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           $ref: '#/components/responses/UnprocessableTargetUrl'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
         '502':
           $ref: '#/components/responses/ReplayFailed'
 
@@ -344,6 +350,14 @@ components:
             $ref: '#/components/schemas/Error'
           example:
             error: { code: payload_too_large, message: Request body exceeds maximum allowed size }
+    TooManyRequests:
+      description: Rate limit exceeded for this source IP and/or inbox
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: rate_limited, message: 'Too many requests, slow down' }
     UnprocessableTargetUrl:
       description: target_url missing, invalid, or blocked (private/loopback address)
       content:
