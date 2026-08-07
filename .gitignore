@@ -14,3 +14,4 @@
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 /notes
+/.ai
