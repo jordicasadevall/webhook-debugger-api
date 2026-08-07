@@ -34,7 +34,8 @@ class WebhookReplayer
 
     public function replay(Event $event, string $targetUrl): array
     {
-        $this->assertUrlSafe($targetUrl);
+        $host = parse_url($targetUrl, PHP_URL_HOST);
+        $ip = $this->assertUrlSafe($targetUrl, is_string($host) ? $host : '');
 
         $start = microtime(true);
 
@@ -44,6 +45,10 @@ class WebhookReplayer
                 'body' => $event->getBodyRaw() ?? '',
                 'timeout' => self::TIMEOUT_SECONDS,
                 'max_redirects' => 0,
+                // Pin the connection to the IP we already validated below, so DNS
+                // cannot resolve differently between the check and the actual request
+                // (DNS-rebinding SSRF bypass).
+                'resolve' => [$host => $ip],
             ]);
 
             $statusCode = $response->getStatusCode();
@@ -61,11 +66,14 @@ class WebhookReplayer
         ];
     }
 
-    private function assertUrlSafe(string $url): void
+    /**
+     * Resolves and validates the target host, returning the IP that must be used
+     * for the actual request (via the HTTP client's `resolve` option) so the
+     * connection cannot re-resolve to a different, unvalidated address.
+     */
+    private function assertUrlSafe(string $url, string $host): string
     {
-        $parts = parse_url($url);
-        $scheme = $parts['scheme'] ?? '';
-        $host = $parts['host'] ?? '';
+        $scheme = parse_url($url, PHP_URL_SCHEME) ?? '';
 
         if (!in_array($scheme, ['http', 'https'], true) || '' === $host) {
             throw ApiException::unprocessable('invalid_target_url', 'target_url must be an absolute http(s) URL');
@@ -80,6 +88,8 @@ class WebhookReplayer
         if (IpUtils::checkIp($ip, self::BLOCKED_IP_RANGES)) {
             throw ApiException::unprocessable('target_url_blocked', 'target_url resolves to a blocked address range');
         }
+
+        return $ip;
     }
 
     private function filterHeaders(array $headers): array
