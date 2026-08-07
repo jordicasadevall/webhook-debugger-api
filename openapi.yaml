@@ -134,6 +134,90 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/TooManyRequests'
+    put:
+      operationId: receiveWebhookPut
+      tags: [Webhook Receiver]
+      summary: Receive a webhook (PUT)
+      description: Behaves identically to the POST variant — see its description for details.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+      requestBody:
+        required: false
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Webhook captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiveResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    patch:
+      operationId: receiveWebhookPatch
+      tags: [Webhook Receiver]
+      summary: Receive a webhook (PATCH)
+      description: Behaves identically to the POST variant — see its description for details.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+      requestBody:
+        required: false
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Webhook captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiveResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    delete:
+      operationId: receiveWebhookDelete
+      tags: [Webhook Receiver]
+      summary: Receive a webhook (DELETE)
+      description: Behaves identically to the POST variant — see its description for details.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+      requestBody:
+        required: false
+        content:
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Webhook captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiveResult'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
   /inboxes/{inboxId}/events:
     get:
