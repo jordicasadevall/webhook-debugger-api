@@ -9,8 +9,10 @@ info:
     captured requests to any destination URL — useful for debugging
     webhook integrations without a public endpoint of your own.
 
-    Authentication is handled entirely by RapidAPI at the gateway level;
-    no API key is required in the request body or path.
+    Authentication is handled entirely by RapidAPI at the gateway level via
+    the X-RapidAPI-Key header; no key is required in the request body or
+    path. The one exception is the webhook receiver URL (/in/{inboxId}),
+    which your webhook provider calls directly and which requires no key.
   version: "1.0.0"
 servers:
   - url: /
@@ -22,6 +24,9 @@ tags:
   - name: Inboxes
   - name: Webhook Receiver
   - name: Events
+
+security:
+  - RapidAPIKey: []
 
 paths:
   /inboxes:
@@ -47,6 +52,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Inbox'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
   /inboxes/{inboxId}:
     get:
@@ -62,6 +69,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Inbox'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -77,6 +86,10 @@ paths:
         query params, raw body, parsed JSON body, client IP, timestamp)
         is captured as an event under this inbox and always returns
         quickly so senders don't retry or disable the webhook.
+
+        This URL is called directly by your webhook provider, not through
+        RapidAPI, so it does not require an API key.
+      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       requestBody:
@@ -105,7 +118,9 @@ paths:
       summary: Receive a webhook (GET)
       description: |
         Some providers send a GET verification challenge before
-        registering a webhook. Behaves identically to the POST variant.
+        registering a webhook. Behaves identically to the POST variant,
+        including not requiring an API key.
+      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       responses:
@@ -147,6 +162,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventList'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -165,6 +182,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventDetail'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -200,6 +219,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReplayResult'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
@@ -210,6 +231,15 @@ paths:
           $ref: '#/components/responses/ReplayFailed'
 
 components:
+  securitySchemes:
+    RapidAPIKey:
+      type: apiKey
+      in: header
+      name: X-RapidAPI-Key
+      description: |
+        Provided by RapidAPI once you subscribe. Not required for the
+        webhook receiver URL (/in/{inboxId}), which providers call directly.
+
   parameters:
     InboxId:
       name: inboxId
@@ -350,6 +380,14 @@ components:
             $ref: '#/components/schemas/Error'
           example:
             error: { code: payload_too_large, message: Request body exceeds maximum allowed size }
+    Forbidden:
+      description: Missing or invalid RapidAPI credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: { code: forbidden, message: 'This API must be called through RapidAPI' }
     TooManyRequests:
       description: Rate limit exceeded for this source IP and/or inbox
       content:
