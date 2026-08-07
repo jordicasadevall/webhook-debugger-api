@@ -7,7 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
-#[ORM\Index(columns: ['received_at'], name: 'idx_event_received_at')]
+// Matches the actual query in EventRepository/EventController::list():
+// WHERE inbox_id = ? ORDER BY received_at DESC. Postgres can scan a plain
+// ascending btree index backwards for the DESC ordering, so no explicit
+// DESC column order is needed here.
+#[ORM\Index(columns: ['inbox_id', 'received_at'], name: 'idx_event_inbox_received_at')]
 class Event
 {
     #[ORM\Id]
