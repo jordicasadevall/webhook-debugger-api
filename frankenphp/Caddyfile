@@ -24,6 +24,14 @@
 	root /app/public
 	encode zstd br gzip
 
+	# Reject oversized request bodies at the edge, before FrankenPHP buffers
+	# them into worker memory. Generous headroom above the app's 1MB
+	# business limit (config/packages: WebhookController::MAX_BODY_BYTES);
+	# this is a DoS backstop, not the source of truth for that limit.
+	request_body {
+		max_size 2MB
+	}
+
 	mercure {
 		# Publisher JWT key
 		publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
