@@ -15,10 +15,10 @@ info:
     which your webhook provider calls directly and which requires no key.
   version: "1.0.0"
 servers:
+  - url: http://v2202608394375497626.megasrv.de
+    description: Production
   - url: /
-    description: Same server (works locally and once deployed)
-  - url: https://webhook-debugger-api.example.com
-    description: Production (replace with the deployed base URL)
+    description: Same server (works locally)
 
 tags:
   - name: Inboxes
