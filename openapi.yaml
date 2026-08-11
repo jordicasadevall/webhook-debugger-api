@@ -270,6 +270,20 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteEvent
+      tags: [Events]
+      summary: Delete a captured event
+      parameters:
+        - $ref: '#/components/parameters/InboxId'
+        - $ref: '#/components/parameters/EventId'
+      responses:
+        '204':
+          description: Event deleted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /inboxes/{inboxId}/events/{eventId}/replay:
     post:

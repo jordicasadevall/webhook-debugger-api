@@ -7,11 +7,13 @@ use App\Entity\Inbox;
 use App\Exception\ApiException;
 use App\Repository\EventRepository;
 use App\Service\WebhookReplayer;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
@@ -58,6 +60,20 @@ class EventController
         $this->assertBelongsToInbox($event, $inbox);
 
         return new JsonResponse($this->serializeDetail($event));
+    }
+
+    #[Route('/inboxes/{inbox}/events/{event}', name: 'event_delete', methods: ['DELETE'], requirements: ['inbox' => Requirement::UUID, 'event' => Requirement::UUID])]
+    public function delete(
+        #[MapEntity(mapping: ['inbox' => 'id'])] Inbox $inbox,
+        #[MapEntity(mapping: ['event' => 'id'])] Event $event,
+        EntityManagerInterface $em,
+    ): Response {
+        $this->assertBelongsToInbox($event, $inbox);
+
+        $em->remove($event);
+        $em->flush();
+
+        return new Response(status: 204);
     }
 
     #[Route('/inboxes/{inbox}/events/{event}/replay', name: 'event_replay', methods: ['POST'], requirements: ['inbox' => Requirement::UUID, 'event' => Requirement::UUID])]

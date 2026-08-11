@@ -85,6 +85,51 @@ class EventControllerTest extends WebhookDebuggerTestCase
     }
 
     #[Test]
+    public function deleteEvent(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request('DELETE', "/inboxes/$inboxId/events/$eventId");
+
+        self::assertResponseStatusCodeSame(204);
+
+        $client->request('GET', "/inboxes/$inboxId/events/$eventId");
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    #[Test]
+    public function deleteUnknownEventReturns404(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId] = $this->createInboxWithEvent($client);
+
+        $client->request('DELETE', "/inboxes/$inboxId/events/00000000-0000-0000-0000-000000000000");
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    #[Test]
+    public function deleteEventFromWrongInboxReturns404(): void
+    {
+        $client = static::createClient();
+        $this->resetDatabase($client->getContainer()->get(EntityManagerInterface::class));
+        [$inboxId, $eventId] = $this->createInboxWithEvent($client);
+
+        $client->request('POST', '/inboxes', server: ['CONTENT_TYPE' => 'application/json'], content: '{}');
+        $otherInboxId = json_decode($client->getResponse()->getContent(), true)['id'];
+
+        $client->request('DELETE', "/inboxes/$otherInboxId/events/$eventId");
+        self::assertResponseStatusCodeSame(404);
+
+        // must not have been deleted via the wrong inbox — still reachable via the real one
+        $client->request('GET', "/inboxes/$inboxId/events/$eventId");
+        self::assertResponseIsSuccessful();
+    }
+
+    #[Test]
     public function replayInvalidUrlReturns422(): void
     {
         $client = static::createClient();
