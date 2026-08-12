@@ -15,7 +15,7 @@ info:
     which your webhook provider calls directly and which requires no key.
   version: "1.0.0"
 servers:
-  - url: http://v2202608394375497626.megasrv.de
+  - url: https://webhook-debugger.jordicasadevall-engineering.top
     description: Production
   - url: /
     description: Same server (works locally)
