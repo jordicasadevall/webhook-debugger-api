@@ -25,9 +25,6 @@ tags:
   - name: Webhook Receiver
   - name: Events
 
-security:
-  - RapidAPIKey: []
-
 paths:
   /inboxes:
     post:
@@ -89,7 +86,6 @@ paths:
 
         This URL is called directly by your webhook provider, not through
         RapidAPI, so it does not require an API key.
-      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       requestBody:
@@ -120,7 +116,6 @@ paths:
         Some providers send a GET verification challenge before
         registering a webhook. Behaves identically to the POST variant,
         including not requiring an API key.
-      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       responses:
@@ -139,7 +134,6 @@ paths:
       tags: [Webhook Receiver]
       summary: Receive a webhook (PUT)
       description: Behaves identically to the POST variant — see its description for details.
-      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       requestBody:
@@ -167,7 +161,6 @@ paths:
       tags: [Webhook Receiver]
       summary: Receive a webhook (PATCH)
       description: Behaves identically to the POST variant — see its description for details.
-      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       requestBody:
@@ -195,7 +188,6 @@ paths:
       tags: [Webhook Receiver]
       summary: Receive a webhook (DELETE)
       description: Behaves identically to the POST variant — see its description for details.
-      security: []
       parameters:
         - $ref: '#/components/parameters/InboxId'
       requestBody:
@@ -329,15 +321,6 @@ paths:
           $ref: '#/components/responses/ReplayFailed'
 
 components:
-  securitySchemes:
-    RapidAPIKey:
-      type: apiKey
-      in: header
-      name: X-RapidAPI-Key
-      description: |
-        Provided by RapidAPI once you subscribe. Not required for the
-        webhook receiver URL (/in/{inboxId}), which providers call directly.
-
   parameters:
     InboxId:
       name: inboxId
