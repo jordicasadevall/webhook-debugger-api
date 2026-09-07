@@ -1,8 +1,13 @@
 {
-    "name": "symfony/skeleton",
+    "name": "jordicasadevall/webhook-debugger-api",
     "type": "project",
     "license": "MIT",
-    "description": "A minimal Symfony project recommended to create bare bones applications",
+    "description": "Receive, inspect, and replay webhooks to debug integrations without a public endpoint of your own.",
+    "authors": [
+        {
+            "name": "Jordi Casadevall"
+        }
+    ],
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {

@@ -1,6 +1,6 @@
 # Deployment Checklist
 
-Project-specific steps for the first public release, on top of the generic
+Project-specific steps for a public release, on top of the generic
 Docker/server setup covered in [`production.md`](production.md).
 
 ## Infrastructure
@@ -11,17 +11,6 @@ Docker/server setup covered in [`production.md`](production.md).
 - [ ] Open required ports in the firewall/security group (80, 443, and
       443/udp for HTTP3).
 
-## Prod image build
-
-~~Building the `frankenphp_prod` target failed~~ — fixed. Root cause wasn't
-missing build-time secrets, it was `symfony/uid` (used directly by
-`Symfony\Component\Uid\Uuid` in the entities) only being present transitively
-via `symfony/ai-mate`, a `require-dev`-only tool. Stripped out by `--no-dev`,
-which broke every entity with an ID. Added `symfony/uid` as a direct
-dependency; verified by building the real `frankenphp_prod` image, running
-it against the dev Postgres, and confirming create-inbox → receive →
-list-events works end to end.
-
 ## App secrets/config
 
 Set via the real deploy environment — never commit these:
@@ -29,8 +18,13 @@ Set via the real deploy environment — never commit these:
 - [ ] `APP_ENV=prod`
 - [ ] `APP_SECRET` — currently empty in `.env`; generate a real random value
 - [ ] `DATABASE_URL` — real production Postgres connection string
-- [ ] `RAPIDAPI_PROXY_SECRET` — real value, must match what's configured on
-      the RapidAPI side (see [`RapidApiProxyGuard`](../src/EventListener/RapidApiProxyGuard.php))
+- [ ] `GATEWAY_SECRET` (or the legacy `RAPIDAPI_PROXY_SECRET` alias) — only
+      needed if you're putting this behind an API gateway; must match what's
+      configured there (see
+      [`GatewaySecretGuard`](../src/EventListener/GatewaySecretGuard.php)).
+      Leave empty to serve the API directly with no gateway.
+- [ ] `GATEWAY_SECRET_HEADER` — only needed if your gateway doesn't use
+      RapidAPI's `X-RapidAPI-Proxy-Secret` header name.
 - [ ] `EVENT_RETENTION_DAYS` — confirm `7` is the value you want in prod
 - [ ] `SERVER_NAME` — real domain
 
@@ -44,14 +38,14 @@ Set via the real deploy environment — never commit these:
 - [ ] Wire up cron (or host equivalent) for `bin/console app:events:cleanup`
       — nothing runs it automatically, it needs an external scheduler.
 
-## RapidAPI setup
+## Optional: listing on RapidAPI
 
-- [ ] Update `servers:` in [`openapi.yaml`](../openapi.yaml) — still has the
-      `example.com` placeholder, needs the real deployed URL.
+- [ ] Update `servers:` in [`openapi.yaml`](../openapi.yaml) to include the
+      deployed URL.
 - [ ] Import the spec via RapidAPI's "Add New API → Import from OpenAPI".
 - [ ] Set the base URL in RapidAPI to the deployed host.
 - [ ] Configure RapidAPI to send `X-RapidAPI-Proxy-Secret` matching
-      `RAPIDAPI_PROXY_SECRET`.
+      `GATEWAY_SECRET`.
 - [ ] Define a pricing/quota plan.
 - [ ] Test each endpoint via RapidAPI's built-in tester before submitting
       for review.
@@ -60,12 +54,6 @@ Set via the real deploy environment — never commit these:
 
 Not blocking, but worth knowing before real traffic:
 
-- [ ] OpenAPI doesn't document that the receiver accepts PUT/PATCH/DELETE
-      too, only GET/POST.
-- [ ] Malformed non-object JSON bodies (e.g. `"5"`) produce a PHP warning
-      instead of a clean 400.
-- [ ] Vestigial `identity_generation_preferences` line in
-      `config/packages/doctrine.yaml`.
 - [ ] No structured observability beyond default 5xx logging.
 - [ ] Rate limiter state is filesystem-backed per-container — fine for a
       single instance, resets on restart, won't be shared if this ever
@@ -74,5 +62,5 @@ Not blocking, but worth knowing before real traffic:
 ## Final smoke test after deploy
 
 - [ ] Create an inbox, send a test webhook, list/view/replay it, confirm
-      rate limits and the RapidAPI proxy check behave as expected against
-      the real URL.
+      rate limits and (if configured) the gateway secret check behave as
+      expected against the real URL.

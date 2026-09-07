@@ -2,7 +2,7 @@
 
 namespace App\Tests\EventListener;
 
-use App\EventListener\RapidApiProxyGuard;
+use App\EventListener\GatewaySecretGuard;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -12,11 +12,11 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-class RapidApiProxyGuardTest extends TestCase
+class GatewaySecretGuardTest extends TestCase
 {
-    private function makeGuard(string $secret, ?LoggerInterface $logger = null): RapidApiProxyGuard
+    private function makeGuard(string $secret, string $headerName = 'X-RapidAPI-Proxy-Secret', ?LoggerInterface $logger = null): GatewaySecretGuard
     {
-        return new RapidApiProxyGuard($secret, $logger ?? new NullLogger());
+        return new GatewaySecretGuard($secret, $headerName, $logger ?? new NullLogger());
     }
 
     private function makeEvent(Request $request): RequestEvent
@@ -74,10 +74,10 @@ class RapidApiProxyGuardTest extends TestCase
     {
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning')->with(
-            self::stringContains('bypassing RapidAPI'),
+            self::stringContains('bypassing the gateway'),
             self::callback(static fn (array $context) => 'forbidden' === $context['code'] && '/inboxes' === $context['path']),
         );
-        $guard = $this->makeGuard('super-secret', $logger);
+        $guard = $this->makeGuard('super-secret', logger: $logger);
         $request = Request::create('/inboxes', 'POST');
         $request->attributes->set('_route', 'inbox_create');
 
@@ -89,6 +89,19 @@ class RapidApiProxyGuardTest extends TestCase
     {
         $guard = $this->makeGuard('super-secret');
         $request = Request::create('/inboxes', 'POST', server: ['HTTP_X_RAPIDAPI_PROXY_SECRET' => 'super-secret']);
+        $request->attributes->set('_route', 'inbox_create');
+        $event = $this->makeEvent($request);
+
+        ($guard)($event);
+
+        self::assertFalse($event->hasResponse());
+    }
+
+    #[Test]
+    public function supportsACustomHeaderName(): void
+    {
+        $guard = $this->makeGuard('super-secret', 'X-Api-Gateway-Secret');
+        $request = Request::create('/inboxes', 'POST', server: ['HTTP_X_API_GATEWAY_SECRET' => 'super-secret']);
         $request->attributes->set('_route', 'inbox_create');
         $event = $this->makeEvent($request);
 

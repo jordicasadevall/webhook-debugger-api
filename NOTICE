@@ -1,0 +1,12 @@
+Webhook Debugger API
+Copyright (c) 2026 Jordi Casadevall
+
+This project is licensed under the MIT License (see LICENSE).
+
+It builds on two MIT-licensed upstream projects:
+
+- The application skeleton is based on symfony/skeleton
+  (https://github.com/symfony/skeleton), Copyright (c) Fabien Potencier.
+- The Docker/FrankenPHP setup (Dockerfile, compose files, frankenphp/, and
+  most of docs/) is based on Symfony Docker
+  (https://github.com/dunglas/symfony-docker), Copyright (c) Kévin Dunglas.

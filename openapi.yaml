@@ -9,16 +9,21 @@ info:
     captured requests to any destination URL — useful for debugging
     webhook integrations without a public endpoint of your own.
 
-    Authentication is handled entirely by RapidAPI at the gateway level via
-    the X-RapidAPI-Key header; no key is required in the request body or
-    path. The one exception is the webhook receiver URL (/in/{inboxId}),
-    which your webhook provider calls directly and which requires no key.
+    Self-hosted deployments can optionally require a shared secret header
+    (`X-RapidAPI-Proxy-Secret` by default, configurable) on every endpoint
+    except the webhook receiver and docs routes — see `GATEWAY_SECRET` in
+    the README. This is what lets the same API be listed behind a gateway
+    like RapidAPI, which handles authentication (the X-RapidAPI-Key header)
+    and billing at its edge and forwards the shared secret to prove requests
+    came through it; no key is required in the request body or path either
+    way. The webhook receiver URL (/in/{inboxId}) is always exempt, since
+    your webhook provider calls it directly, never through a gateway.
   version: "1.0.0"
 servers:
-  - url: https://webhook-debugger.jordicasadevall-engineering.top
-    description: Production
   - url: /
-    description: Same server (works locally)
+    description: Same server (works locally and for any self-hosted deployment)
+  - url: https://webhook-debugger.jordicasadevall-engineering.top
+    description: Hosted instance (listed on RapidAPI)
 
 tags:
   - name: Inboxes
@@ -85,7 +90,7 @@ paths:
         quickly so senders don't retry or disable the webhook.
 
         This URL is called directly by your webhook provider, not through
-        RapidAPI, so it does not require an API key.
+        a gateway, so it does not require an API key.
       parameters:
         - $ref: '#/components/parameters/InboxId'
       requestBody:
@@ -462,13 +467,13 @@ components:
           example:
             error: { code: payload_too_large, message: Request body exceeds maximum allowed size }
     Forbidden:
-      description: Missing or invalid RapidAPI credentials
+      description: Missing or invalid gateway secret (only enforced when GATEWAY_SECRET is configured)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
           example:
-            error: { code: forbidden, message: 'This API must be called through RapidAPI' }
+            error: { code: forbidden, message: 'A valid gateway secret is required' }
     TooManyRequests:
       description: Rate limit exceeded for this source IP and/or inbox
       content:
