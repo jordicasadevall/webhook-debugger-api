@@ -83,15 +83,15 @@ Interactive Swagger UI is served by the app itself at
 All variables live in [`.env`](.env) (defaults) and can be overridden in
 `.env.local` or the deploy environment:
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `GATEWAY_SECRET` | *(empty)* | Shared secret required on every endpoint except the webhook receiver and docs, via `GATEWAY_SECRET_HEADER`. Empty disables the check — the default for self-hosting with no gateway in front. Falls back to `RAPIDAPI_PROXY_SECRET` if that's set instead. |
-| `GATEWAY_SECRET_HEADER` | `X-RapidAPI-Proxy-Secret` | Header name the gateway secret is expected on. |
-| `EVENT_RETENTION_DAYS` | `7` | How long captured events are kept before `bin/console app:events:cleanup` deletes them. That command does nothing on its own — schedule it (e.g. daily cron) on whatever host runs this. Inboxes are never deleted, only their events. |
-| `DATABASE_URL` | local Postgres | Doctrine DBAL connection string. |
-| `APP_SECRET` | *(empty)* | Symfony's app secret; set a real random value in any real deployment. |
-| `SERVER_NAME` | `localhost` | Domain Caddy serves and requests a TLS cert for. |
-| `HTTP_PORT` / `HTTPS_PORT` / `HTTP3_PORT` | `8080` / `8443` / `8443` | Local port bindings. |
+| Variable                                  | Default                   | Meaning                                                                                                                                                                                                                                                    |
+| ----------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GATEWAY_SECRET`                          | _(empty)_                 | Shared secret required on every endpoint except the webhook receiver and docs, via `GATEWAY_SECRET_HEADER`. Empty disables the check — the default for self-hosting with no gateway in front. Falls back to `RAPIDAPI_PROXY_SECRET` if that's set instead. |
+| `GATEWAY_SECRET_HEADER`                   | `X-RapidAPI-Proxy-Secret` | Header name the gateway secret is expected on.                                                                                                                                                                                                             |
+| `EVENT_RETENTION_DAYS`                    | `7`                       | How long captured events are kept before `bin/console app:events:cleanup` deletes them. That command does nothing on its own — schedule it (e.g. daily cron) on whatever host runs this. Inboxes are never deleted, only their events.                     |
+| `DATABASE_URL`                            | local Postgres            | Doctrine DBAL connection string.                                                                                                                                                                                                                           |
+| `APP_SECRET`                              | _(empty)_                 | Symfony's app secret; set a real random value in any real deployment.                                                                                                                                                                                      |
+| `SERVER_NAME`                             | `localhost`               | Domain Caddy serves and requests a TLS cert for.                                                                                                                                                                                                           |
+| `HTTP_PORT` / `HTTPS_PORT` / `HTTP3_PORT` | `8080` / `8443` / `8443`  | Local port bindings.                                                                                                                                                                                                                                       |
 
 ## Security model
 

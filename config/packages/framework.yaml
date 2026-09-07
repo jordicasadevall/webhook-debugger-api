@@ -1,49 +1,49 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
-    secret: '%env(APP_SECRET)%'
+  secret: "%env(APP_SECRET)%"
 
-    # Note that the session will be started ONLY if you read or write from it.
-    session: true
+  # Note that the session will be started ONLY if you read or write from it.
+  session: true
 
-    #esi: true
-    #fragments: true
+  #esi: true
+  #fragments: true
 
-    rate_limiter:
-        limiters:
-            # Guards /in/{inboxId}: this route is called directly by third-party
-            # webhook providers, never through RapidAPI's gateway, so it has no
-            # other abuse protection. Limited both per source IP and per inbox,
-            # since either a single flooding IP or a single targeted inbox is a
-            # realistic attack shape.
-            webhook_receive_ip:
-                policy: 'sliding_window'
-                limit: 300
-                interval: '1 minute'
-            webhook_receive_inbox:
-                policy: 'sliding_window'
-                limit: 120
-                interval: '1 minute'
-            # Guards /replay: each call makes this server send an outbound HTTP
-            # request to a caller-chosen URL, so it's throttled tighter to limit
-            # its use as a traffic relay/amplifier.
-            webhook_replay:
-                policy: 'sliding_window'
-                limit: 20
-                interval: '1 minute'
+  rate_limiter:
+    limiters:
+      # Guards /in/{inboxId}: this route is called directly by third-party
+      # webhook providers, never through RapidAPI's gateway, so it has no
+      # other abuse protection. Limited both per source IP and per inbox,
+      # since either a single flooding IP or a single targeted inbox is a
+      # realistic attack shape.
+      webhook_receive_ip:
+        policy: "sliding_window"
+        limit: 300
+        interval: "1 minute"
+      webhook_receive_inbox:
+        policy: "sliding_window"
+        limit: 120
+        interval: "1 minute"
+      # Guards /replay: each call makes this server send an outbound HTTP
+      # request to a caller-chosen URL, so it's throttled tighter to limit
+      # its use as a traffic relay/amplifier.
+      webhook_replay:
+        policy: "sliding_window"
+        limit: 20
+        interval: "1 minute"
 
 when@test:
-    framework:
-        test: true
-        session:
-            storage_factory_id: session.storage.factory.mock_file
-        rate_limiter:
-            limiters:
-                webhook_receive_ip:
-                    limit: 3
-                    interval: '1 minute'
-                webhook_receive_inbox:
-                    limit: 3
-                    interval: '1 minute'
-                webhook_replay:
-                    limit: 3
-                    interval: '1 minute'
+  framework:
+    test: true
+    session:
+      storage_factory_id: session.storage.factory.mock_file
+    rate_limiter:
+      limiters:
+        webhook_receive_ip:
+          limit: 3
+          interval: "1 minute"
+        webhook_receive_inbox:
+          limit: 3
+          interval: "1 minute"
+        webhook_replay:
+          limit: 3
+          interval: "1 minute"

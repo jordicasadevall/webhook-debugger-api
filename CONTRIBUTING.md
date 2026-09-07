@@ -33,7 +33,7 @@ docker compose exec php bin/console doctrine:migrations:migrate
   standard Symfony conventions (constructor property promotion, attribute-based
   routing/config, PHPUnit `#[Test]` attributes rather than `test`-prefixed
   method names).
-- Keep changes focused. A bug fix doesn't need an accompanying refactor.
+- Keep changes focused. A bugfix doesn't need an accompanying refactor.
 
 ## Tests
 
@@ -43,7 +43,7 @@ covers:
 - `tests/Controller/` — functional, HTTP-level tests per controller.
 - `tests/Service/`, `tests/EventListener/`, `tests/Command/` — unit tests.
 
-Run a single file with `docker compose exec php bin/phpunit tests/path/to/FileTest.php`.
+Run a single test file with `docker compose exec php bin/phpunit tests/path/to/SomeTest.php`.
 
 ## Commit messages
 
@@ -57,7 +57,7 @@ bypass in webhook replay`.
 - Make sure `docker compose exec php bin/phpunit` and the linter (see
   [`.github/workflows/ci.yaml`](.github/workflows/ci.yaml)) pass — CI runs
   both on every PR.
-- Update [`openapi.yaml`](openapi.yaml) and the README if you change or add
+- Update [`openapi.yaml`](openapi.yaml) and the readme if you change or add
   an endpoint.
 
 ## Reporting security issues

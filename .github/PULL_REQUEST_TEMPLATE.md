@@ -1,4 +1,4 @@
-## What changed and why
+# What changed and why
 
 <!-- One or two sentences. Link an issue if there is one. -->
 
@@ -9,5 +9,5 @@
 ## Checklist
 
 - [ ] `docker compose exec php bin/phpunit` passes
-- [ ] `openapi.yaml` and README updated if an endpoint changed or was added
+- [ ] `openapi.yaml` and readme updated if an endpoint changed or was added
 - [ ] A migration was added if the schema changed

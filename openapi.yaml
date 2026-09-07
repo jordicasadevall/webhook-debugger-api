@@ -48,14 +48,14 @@ paths:
                   description: Optional label for the inbox.
                   example: my-stripe-inbox
       responses:
-        '201':
+        "201":
           description: Inbox created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Inbox'
-        '403':
-          $ref: '#/components/responses/Forbidden'
+                $ref: "#/components/schemas/Inbox"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
   /inboxes/{inboxId}:
     get:
@@ -63,18 +63,18 @@ paths:
       tags: [Inboxes]
       summary: Get inbox details
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
       responses:
-        '200':
+        "200":
           description: Inbox found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Inbox'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/Inbox"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /in/{inboxId}:
     post:
@@ -92,27 +92,27 @@ paths:
         This URL is called directly by your webhook provider, not through
         a gateway, so it does not require an API key.
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
       requestBody:
         required: false
         content:
-          '*/*':
+          "*/*":
             schema:
               type: string
               format: binary
       responses:
-        '200':
+        "200":
           description: Webhook captured
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReceiveResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '413':
-          $ref: '#/components/responses/PayloadTooLarge'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/ReceiveResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
     get:
       operationId: receiveWebhookGet
       tags: [Webhook Receiver]
@@ -122,99 +122,99 @@ paths:
         registering a webhook. Behaves identically to the POST variant,
         including not requiring an API key.
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
       responses:
-        '200':
+        "200":
           description: Webhook captured
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReceiveResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/ReceiveResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
     put:
       operationId: receiveWebhookPut
       tags: [Webhook Receiver]
       summary: Receive a webhook (PUT)
       description: Behaves identically to the POST variant — see its description for details.
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
       requestBody:
         required: false
         content:
-          '*/*':
+          "*/*":
             schema:
               type: string
               format: binary
       responses:
-        '200':
+        "200":
           description: Webhook captured
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReceiveResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '413':
-          $ref: '#/components/responses/PayloadTooLarge'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/ReceiveResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
     patch:
       operationId: receiveWebhookPatch
       tags: [Webhook Receiver]
       summary: Receive a webhook (PATCH)
       description: Behaves identically to the POST variant — see its description for details.
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
       requestBody:
         required: false
         content:
-          '*/*':
+          "*/*":
             schema:
               type: string
               format: binary
       responses:
-        '200':
+        "200":
           description: Webhook captured
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReceiveResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '413':
-          $ref: '#/components/responses/PayloadTooLarge'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/ReceiveResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
     delete:
       operationId: receiveWebhookDelete
       tags: [Webhook Receiver]
       summary: Receive a webhook (DELETE)
       description: Behaves identically to the POST variant — see its description for details.
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
       requestBody:
         required: false
         content:
-          '*/*':
+          "*/*":
             schema:
               type: string
               format: binary
       responses:
-        '200':
+        "200":
           description: Webhook captured
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReceiveResult'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '413':
-          $ref: '#/components/responses/PayloadTooLarge'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
+                $ref: "#/components/schemas/ReceiveResult"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   /inboxes/{inboxId}/events:
     get:
@@ -222,7 +222,7 @@ paths:
       tags: [Events]
       summary: List events received by an inbox
       parameters:
-        - $ref: '#/components/parameters/InboxId'
+        - $ref: "#/components/parameters/InboxId"
         - name: page
           in: query
           schema:
@@ -237,16 +237,16 @@ paths:
             maximum: 100
             default: 20
       responses:
-        '200':
+        "200":
           description: Paginated list of events
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EventList'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/EventList"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /inboxes/{inboxId}/events/{eventId}:
     get:
@@ -254,33 +254,33 @@ paths:
       tags: [Events]
       summary: Get full detail of a single captured event
       parameters:
-        - $ref: '#/components/parameters/InboxId'
-        - $ref: '#/components/parameters/EventId'
+        - $ref: "#/components/parameters/InboxId"
+        - $ref: "#/components/parameters/EventId"
       responses:
-        '200':
+        "200":
           description: Event found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EventDetail'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: "#/components/schemas/EventDetail"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
     delete:
       operationId: deleteEvent
       tags: [Events]
       summary: Delete a captured event
       parameters:
-        - $ref: '#/components/parameters/InboxId'
-        - $ref: '#/components/parameters/EventId'
+        - $ref: "#/components/parameters/InboxId"
+        - $ref: "#/components/parameters/EventId"
       responses:
-        '204':
+        "204":
           description: Event deleted
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /inboxes/{inboxId}/events/{eventId}/replay:
     post:
@@ -293,8 +293,8 @@ paths:
         public http(s) URL — loopback, private, link-local, and cloud
         metadata address ranges are blocked.
       parameters:
-        - $ref: '#/components/parameters/InboxId'
-        - $ref: '#/components/parameters/EventId'
+        - $ref: "#/components/parameters/InboxId"
+        - $ref: "#/components/parameters/EventId"
       requestBody:
         required: true
         content:
@@ -308,22 +308,22 @@ paths:
                   format: uri
                   example: https://example.com/webhook-handler
       responses:
-        '200':
+        "200":
           description: Replay completed (reflects the target's response, not necessarily success)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReplayResult'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableTargetUrl'
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        '502':
-          $ref: '#/components/responses/ReplayFailed'
+                $ref: "#/components/schemas/ReplayResult"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableTargetUrl"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "502":
+          $ref: "#/components/responses/ReplayFailed"
 
 components:
   parameters:
@@ -390,7 +390,7 @@ components:
 
     EventDetail:
       allOf:
-        - $ref: '#/components/schemas/EventSummary'
+        - $ref: "#/components/schemas/EventSummary"
         - type: object
           properties:
             headers:
@@ -420,7 +420,7 @@ components:
         events:
           type: array
           items:
-            $ref: '#/components/schemas/EventSummary'
+            $ref: "#/components/schemas/EventSummary"
 
     ReplayResult:
       type: object
@@ -455,7 +455,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             error: { code: not_found, message: Resource not found }
     PayloadTooLarge:
@@ -463,38 +463,52 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
-            error: { code: payload_too_large, message: Request body exceeds maximum allowed size }
+            error:
+              {
+                code: payload_too_large,
+                message: Request body exceeds maximum allowed size,
+              }
     Forbidden:
       description: Missing or invalid gateway secret (only enforced when GATEWAY_SECRET is configured)
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
-            error: { code: forbidden, message: 'A valid gateway secret is required' }
+            error:
+              { code: forbidden, message: "A valid gateway secret is required" }
     TooManyRequests:
       description: Rate limit exceeded for this source IP and/or inbox
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
-            error: { code: rate_limited, message: 'Too many requests, slow down' }
+            error:
+              { code: rate_limited, message: "Too many requests, slow down" }
     UnprocessableTargetUrl:
       description: target_url missing, invalid, or blocked (private/loopback address)
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
-            error: { code: target_url_blocked, message: target_url resolves to a blocked address range }
+            error:
+              {
+                code: target_url_blocked,
+                message: target_url resolves to a blocked address range,
+              }
     ReplayFailed:
       description: Could not reach target_url
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
-            error: { code: replay_failed, message: 'Could not reach target_url: ...' }
+            error:
+              {
+                code: replay_failed,
+                message: "Could not reach target_url: ...",
+              }

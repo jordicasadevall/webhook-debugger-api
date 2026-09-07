@@ -1,0 +1,8 @@
+---
+default: true
+# README opens with a centered logo/badge block (a <p align="center"> image),
+# not a heading — a common and valid pattern this rule doesn't account for.
+MD041: false
+# Padded table pipes (`| Col | Col |`) are more readable than the "compact"
+# style this rule wants to force; both are valid Markdown table styles.
+MD060: false
