@@ -9,3 +9,6 @@ MD060: false
 # 80-char hard wrap on prose is a style choice, not a correctness issue;
 # docs/ predates this repo's linting and isn't hard-wrapped at 80 chars.
 MD013: false
+# README's centered logo/badge header needs raw <p>/<img>/<h1> — Markdown
+# alone can't center or size images.
+MD033: false

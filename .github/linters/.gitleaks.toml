@@ -3,7 +3,7 @@ title = "gitleaks config"
 [extend]
 useDefault = true
 
-[[allowlist]]
+[allowlist]
 description = "Non-production placeholder values checked in by convention (dev/test envs only; real secrets go in .env.local / .env.*.local, which are gitignored)"
 paths = [
     '''(^|/)\.env\.dev$''',
