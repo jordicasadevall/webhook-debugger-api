@@ -20,3 +20,8 @@ indent_size = 2
 [**.md]
 indent_size = unset
 indent_style = unset
+
+# PHPUnit's own generator aligns continuation attributes under the opening
+# tag name rather than at a fixed indent multiple.
+[phpunit.dist.xml]
+indent_size = unset

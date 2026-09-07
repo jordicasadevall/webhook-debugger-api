@@ -6,6 +6,6 @@ useDefault = true
 [[allowlist]]
 description = "Non-production placeholder values checked in by convention (dev/test envs only; real secrets go in .env.local / .env.*.local, which are gitignored)"
 paths = [
-  '''(^|/)\.env\.dev$''',
-  '''(^|/)\.env\.test$''',
+    '''(^|/)\.env\.dev$''',
+    '''(^|/)\.env\.test$''',
 ]

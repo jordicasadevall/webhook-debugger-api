@@ -6,3 +6,6 @@ MD041: false
 # Padded table pipes (`| Col | Col |`) are more readable than the "compact"
 # style this rule wants to force; both are valid Markdown table styles.
 MD060: false
+# 80-char hard wrap on prose is a style choice, not a correctness issue;
+# docs/ predates this repo's linting and isn't hard-wrapped at 80 chars.
+MD013: false
